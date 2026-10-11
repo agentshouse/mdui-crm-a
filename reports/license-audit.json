@@ -1,0 +1,18 @@
+{
+  "packages": 186,
+  "missingLicenseFiles": [
+    {
+      "name": "@agentshouse/app-bridge",
+      "version": "0.1.0-c357a960443ec",
+      "license": "UNLICENSED"
+    }
+  ],
+  "licenseGaps": [
+    {
+      "name": "@agentshouse/app-bridge",
+      "version": "0.1.0-c357a960443ec",
+      "license": "UNLICENSED"
+    }
+  ],
+  "redistributionStatus": "Unresolved license/attribution gaps; technical checks do not establish redistribution permission."
+}

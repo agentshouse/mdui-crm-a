@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+*.tsbuildinfo
+prune-*.json
+seed-changes.json
+test-results.json
+
+# Transient runtime-migration command output
+/reports/runtime-migration/*.log
+/reports/runtime-migration/*.err
+
+# Raw transport captures and operation batches; summaries are committed.
+/reports/donor-demo/batches/
+/reports/donor-demo/*.txt
+
+/reports/donor-demo/originals/

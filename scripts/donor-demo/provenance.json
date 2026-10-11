@@ -1,0 +1,47 @@
+{
+  "repository": "https://github.com/marmelab/atomic-crm",
+  "commit": "8b5d47ba32190c68801a427ef7682d7a6afc14e0",
+  "license": "MIT",
+  "seed": 1150,
+  "referenceDate": "2026-10-11T12:00:00.000Z",
+  "timezone": "UTC",
+  "dependencies": {
+    "date-fns": "3.6.0",
+    "esbuild": "0.27.4",
+    "faker": "5.5.3",
+    "lucide-react": "0.542.0",
+    "react": "19.2.4"
+  },
+  "counts": {
+    "sales": 6,
+    "tags": 6,
+    "companies": 55,
+    "contacts": 500,
+    "contact_notes": 1200,
+    "deals": 50,
+    "deal_notes": 300,
+    "tasks": 400,
+    "configuration": 1
+  },
+  "outputSha256": "11bc054f7242a5cef8d14be3984c53477dd9a3ef3c17553846db0e60b045125c",
+  "lockSha256": "910b3d0d99474a478cca04c5f95ae46fe67969daa54a3eda58a3db9ef9b69ad3",
+  "sources": {
+    "LICENSE.md": "1774c14a7b97aa0ce5e866f895ddb421db6dfb4769dee9ab40416681d0390316",
+    "src/components/atomic-crm/contacts/contactModel.ts": "7150ba2497ab610d63246fa49cc7b6513dbf1d8c0f81138c0ba667af9f1b0609",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/companies.ts": "97ab266d4b60bb5976f0d0b2c6d18147fd7ce29d43055aa12556fda57831aab8",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/contactNotes.ts": "8daa8c844782d44d6cc3df8c3e933242322e3909bf0473ccdaa481c2a397c18f",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/contacts.ts": "e1e455a814937b65c490323807bb47c370909f3d00525fa93a56ef03c3a39de2",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/dealNotes.ts": "559aaddc560e7a5c4b3d24902eca220f15334c32904f2ea1afae52b27b93e4e6",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/deals.ts": "8af64e5ed47ab46023690f9c14d9150e87d192e44e502b50f2357f059f764d28",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/finalize.ts": "1d4a32889a62f1d08d08110d333672bde6b6b6ac99a1d2fc208b7b6287a1e8fd",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/index.ts": "bd4fb7f900dfcb051543688170a680d1cfdf31932e3b7d7454ecde6b3e068b0d",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/sales.ts": "f5ccae8435cc7edca0db25fbc2c69cccfad7b0a7bc83fdeb9f486d3781c95ab3",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/tags.ts": "138c068d6145b54ab33bd959a0097c896a41a9d300ceb789796a35994da0ee98",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/tasks.ts": "cf231c21fd1f12a95647c9574ae5d9741410682dac3cb397d9b565b5b93e5498",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/types.ts": "deb70b578153d6172412779175191dbc927d5bfd1946cd760c2dfe3baaac3c7a",
+    "src/components/atomic-crm/providers/fakerest/dataGenerator/utils.ts": "a894c9304314b330e54783a381d6bdc87d54e112de4431317215fff7d1a1a7cf",
+    "src/components/atomic-crm/root/defaultConfiguration.ts": "79a9b935ab4b7f376d20c394c9e2ee3272ec6bc20a180e61f09e5fd25ce59f63",
+    "src/components/atomic-crm/root/logos/logo_atomic_crm_dark.svg": "8feeb2f80b37590025b971549fe4e3c2962315a1fafb6d3e8519f94706349245",
+    "src/components/atomic-crm/root/logos/logo_atomic_crm_light.svg": "58a1d7b2f21f9016cef28132e9b095e1742a9bf5c6dddd17fb0d6d888e512b19"
+  }
+}

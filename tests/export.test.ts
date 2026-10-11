@@ -1,0 +1,3 @@
+import {describe,it,expect} from 'vitest';
+import {safeExportValue} from '../src/lib/safeExport';
+describe('local exports',()=>{it('removes Runtime metadata recursively and neutralizes formulas',()=>{expect(safeExportValue([{id:'c1',name:'=1+1',note:'  @SUM(A1)',phone:'+15550100',amount:-20,_house:{room:'private',fields:{}}}])).toEqual([{id:'c1',name:"'=1+1",note:"'  @SUM(A1)",phone:"'+15550100",amount:-20}]);});it('keeps ordinary text and does not mutate records',()=>{const row={name:'Maya',_house:{path:'crm.md'}};expect(safeExportValue(row)).toEqual({name:'Maya'});expect(row._house.path).toBe('crm.md');});});

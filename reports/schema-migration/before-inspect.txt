@@ -1,0 +1,9 @@
+ref: af_q4.r
+path: /rooms/crm-port/settings/schema.yaml
+revisions:
+  - revision: fr_q4.2.c
+    created_at: 2026-10-11T01:17:48.053728Z
+    author_user: 01a0e90c-531c-76df-85bf-d34caf05519c
+  - revision: fr_q4.1.0
+    created_at: 2026-10-11T00:57:59.363692Z
+    author_user: 01a0e90c-531c-76df-85bf-d34caf05519c

@@ -1,0 +1,233 @@
+import { CircleX, Edit, Save, Trash2 } from "lucide-react";
+import {
+  useDelete,
+  useNotify,
+  useResourceContext,
+  useTranslate,
+  useUpdate,
+} from "ra-core";
+import { Form, type BusinessFormMeta } from "@/house-form";
+import { useEffect, useRef, useState } from "react";
+import type { FieldValues } from "react-hook-form";
+import { ReferenceField } from "@/components/admin/reference-field";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import { CompanyAvatar } from "../companies/CompanyAvatar";
+import { Markdown } from "../misc/Markdown";
+import { RelativeDate } from "../misc/RelativeDate";
+import { Status } from "../misc/Status";
+import type { ContactNote, DealNote } from "../types";
+import { NoteInputs } from "./NoteInputs";
+import { NoteAttachments } from "./NoteAttachments";
+import { TeamLabel } from "./TeamLabel";
+
+export const Note = ({
+  showStatus,
+  note,
+}: {
+  showStatus?: boolean;
+  note: DealNote | ContactNote;
+  isLast: boolean;
+}) => {
+  const [isHover, setHover] = useState(false);
+  const [isEditing, setEditing] = useState(false);
+  const [isExpanded, setExpanded] = useState(false);
+  const [isTruncated, setTruncated] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const mutationPendingRef = useRef(false);
+  const resource = useResourceContext();
+  const notify = useNotify();
+  const translate = useTranslate();
+
+  // Detect if content is truncated
+  useEffect(() => {
+    const el = contentRef.current;
+    if (el) {
+      setTruncated(el.scrollHeight > el.clientHeight);
+    }
+  }, [note.text]);
+
+  const [update, { isPending }] = useUpdate();
+
+  const [deleteNote, { isPending: isDeleting }] = useDelete(
+    resource,
+    undefined,
+    {
+      mutationMode: "pessimistic",
+      onSettled: () => {
+        mutationPendingRef.current = false;
+      },
+      onError: (error: Error) => notify(error.message, { type: "error" }),
+      onSuccess: () => {
+        notify("resources.notes.deleted", {
+          type: "info",
+          messageArgs: {
+            _: "Note deleted",
+          },
+        });
+      },
+    },
+  );
+
+  const handleDelete = () => {
+    if (mutationPendingRef.current) return;
+    if (!window.confirm("Delete this note from the Room?")) return;
+    mutationPendingRef.current = true;
+    deleteNote(resource, { id: note.id, previousData: note });
+  };
+
+  const handleEnterEditMode = () => {
+    setEditing(!isEditing);
+  };
+
+  const handleCancelEdit = () => {
+    setEditing(false);
+    setHover(false);
+  };
+
+  const handleNoteUpdate = (values:FieldValues, meta:BusinessFormMeta) => {
+    if (mutationPendingRef.current) return;
+    mutationPendingRef.current = true;
+    update(
+      resource,
+      { id: note.id, data: values, previousData: note, meta },
+      {
+        mutationMode: "pessimistic",
+        onSettled: () => {
+          mutationPendingRef.current = false;
+        },
+        onError: (error: Error) => notify(error.message, { type: "error" }),
+        onSuccess: () => {
+          setEditing(false);
+          setHover(false);
+        },
+      },
+    );
+  };
+
+  const content = (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="mb-4"
+    >
+      <div className="flex items-center space-x-4 w-full">
+        <ReferenceField source="company_id" reference="companies" link="show">
+          <CompanyAvatar width={20} height={20} />
+        </ReferenceField>
+        <div className="inline-flex h-full items-center text-sm text-muted-foreground">
+          <TeamLabel salesId={note.sales_id} />
+          {showStatus && note.status && (
+            <Status className="ml-2" status={note.status} />
+          )}
+        </div>
+        <span className={`${isHover ? "visible" : "invisible"}`}>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={translate("resources.notes.action.edit")}
+                  onClick={handleEnterEditMode}
+                  disabled={isPending || isDeleting}
+                  className="p-1 h-auto cursor-pointer"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{translate("resources.notes.action.edit")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={translate("resources.notes.action.delete")}
+                  onClick={handleDelete}
+                  disabled={isPending || isDeleting}
+                  className="p-1 h-auto cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{translate("resources.notes.action.delete")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </span>
+        <div className="flex-1"></div>
+        <span className="text-sm text-muted-foreground">
+          <RelativeDate date={note.date} />
+        </span>
+      </div>
+      {isEditing ? (
+        <Form onBusinessSubmit={handleNoteUpdate} record={note} className="mt-1">
+          <NoteInputs showStatus={showStatus} />
+          <div className="flex justify-end mt-2 space-x-4">
+            <Button
+              variant="ghost"
+              onClick={handleCancelEdit}
+              disabled={isPending}
+              type="button"
+              className="cursor-pointer"
+            >
+              <CircleX className="w-4 h-4" />
+              {translate("ra.action.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <Save className="w-4 h-4" />
+              {translate("resources.notes.action.update")}
+            </Button>
+          </div>
+        </Form>
+      ) : (
+        <div className="pt-2 text-sm max-w-150">
+          {note.text && (
+            <div
+              ref={contentRef}
+              className={cn(
+                "overflow-hidden transition-[max-height] duration-300 ease-in-out",
+                isExpanded ? "max-h-[5000px]" : "max-h-46",
+              )}
+            >
+              <Markdown>{note.text}</Markdown>
+            </div>
+          )}
+          {isTruncated && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(!isExpanded);
+              }}
+              className="text-primary text-sm mt-1 underline hover:no-underline cursor-pointer"
+            >
+              {isExpanded
+                ? translate("crm.common.show_less")
+                : translate("crm.common.read_more")}
+            </button>
+          )}
+          <NoteAttachments note={note} />
+        </div>
+      )}
+    </div>
+  );
+
+  return content;
+};

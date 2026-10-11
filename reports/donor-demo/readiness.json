@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-11",
+  "scope": "Offline full donor generator adaptation, schema-compatible source fixture, tests and license provenance. Runtime/UI code unchanged.",
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "tests": {
+      "files": 24,
+      "tests": 244,
+      "result": "passed"
+    },
+    "build": "passed",
+    "release": {
+      "result": "passed",
+      "files": 24,
+      "bytes": 2301105
+    }
+  },
+  "sourceOutputSha256": "11bc054f7242a5cef8d14be3984c53477dd9a3ef3c17553846db0e60b045125c",
+  "licenseNoticeSha256": "3346a9ab1e1ac9387bb337aeb6aded07a40981b6a8793f6590649cfa394ac226",
+  "sourceOnlyData": true,
+  "runtimeUnchanged": true,
+  "roomVerification": "room-verification.json: 2,518 donor documents, zero retained legacy documents; 87 unchanged generated originals removed with owner confirmation and fresh revision guards. All expected donor paths and relationship fields read back after removal.",
+  "cleanup": {
+    "removedGeneratedDocuments": 87,
+    "donorDocuments": 2518,
+    "retainedLegacyDocuments": 0,
+    "documentationOnly": true,
+    "sourceFixtureSchemaRuntimeAndLicenseNoticesUnchanged": true,
+    "initialFullBodyReadback": "room-population-initial.json",
+    "postRemovalPathAndRelationshipReadback": "room-verification.json"
+  }
+}

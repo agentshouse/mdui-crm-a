@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-11",
+  "donorCommit": "8b5d47ba32190c68801a427ef7682d7a6afc14e0",
+  "commands": {
+    "npm run typecheck": "passed",
+    "npm run lint": "passed",
+    "npm run build": "passed",
+    "npm run release:check": "passed",
+    "node scripts/check-release.mjs --self-test": "passed",
+    "node scripts/generate-notices.mjs --check": "passed",
+    "npm test": {
+      "passed": 243,
+      "failed": 0,
+      "files": 23
+    }
+  },
+  "room": {
+    "handle": "crm-port",
+    "reference": "r_18.t",
+    "schemaRevision": "fr_q4.2.c",
+    "seedRecords": 88,
+    "counts": {
+      "companies": 8,
+      "contacts": 24,
+      "deals": 16,
+      "tasks": 16,
+      "contact_notes": 12,
+      "deal_notes": 6,
+      "sales": 3,
+      "tags": 2,
+      "configuration": 1
+    },
+    "evidenceScope": "Historical seed/readback result; not repeated or modified by this Runtime migration."
+  },
+  "artifact": {
+    "files": 23,
+    "bytes": 2297889,
+    "fonts": 7,
+    "dependencyNotices": 186
+  },
+  "limits": [
+    "No browser or hosted acceptance",
+    "No live runtime attachment upload/get",
+    "Runtime transport is mocked in focused tests",
+    "No publication, push, release branch, App allocation or binding"
+  ],
+  "regressionCorrection": {
+    "newAdversarialTests": 20,
+    "providerTests": 71,
+    "baselineProvenFailures": 12,
+    "effectiveFieldDeltaValidation": true,
+    "exactOpenedBasesPreserved": true,
+    "roomDataOrSchemaChanged": false
+  },
+  "localCsvCorrection": {
+    "resources": [
+      "contacts",
+      "companies",
+      "deals"
+    ],
+    "explicitAssignment": true,
+    "maximumBytes": 5242880,
+    "maximumRows": 5000,
+    "networkWrappersBundled": false,
+    "roomProviderSourceChanged": false,
+    "actualDevImports": 0,
+    "remoteWrites": 0,
+    "testsUse": "local synthetic/mock fixtures only"
+  },
+  "dependencyHardening": {
+    "package": "dompurify",
+    "from": "3.4.12",
+    "to": "3.4.16",
+    "advisories": [
+      "https://github.com/cure53/DOMPurify/security/advisories/GHSA-55q2-fjhq-7xh7",
+      "https://github.com/cure53/DOMPurify/security/advisories/GHSA-6688-9rhm-gjv2"
+    ],
+    "claim": "Version hardening; production string-input sanitization does not enable IN_PLACE or hooks, so no port exploit established.",
+    "restrictionsPreserved": true,
+    "npmAuditOrGraphUpload": false
+  },
+  "runtimeMigration": {
+    "verifiedAt": "2026-10-11T10:10:42.116113+00:00",
+    "node": "v24.19.0",
+    "bridge": "0.1.0-ce524f6608238",
+    "scope": "Local tests/build/static release and network checks; no browser or hosted acceptance. No remote mutation.",
+    "checks": [
+      {
+        "check": "typecheck",
+        "command": "npm run typecheck",
+        "exitCode": 0
+      },
+      {
+        "check": "lint",
+        "command": "npm run lint",
+        "exitCode": 0
+      },
+      {
+        "check": "test",
+        "command": "npm test",
+        "exitCode": 0
+      },
+      {
+        "check": "notices",
+        "command": "npm run notices",
+        "exitCode": 0
+      },
+      {
+        "check": "build",
+        "command": "npm run build",
+        "exitCode": 0
+      },
+      {
+        "check": "release-audit",
+        "command": "node scripts/check-release.mjs",
+        "exitCode": 0
+      },
+      {
+        "check": "audit-self-test",
+        "command": "node scripts/check-release.mjs --self-test",
+        "exitCode": 0
+      },
+      {
+        "check": "license-check",
+        "command": "node scripts/generate-notices.mjs --check",
+        "exitCode": 0
+      }
+    ],
+    "result": "passed",
+    "tests": {
+      "passed": 243,
+      "failed": 0,
+      "files": 23
+    },
+    "artifact": {
+      "files": 23,
+      "bytes": 2297889,
+      "fontFiles": 7,
+      "releaseDigest": "f94f40b320048888c98d7e9ed1998fb44be3a5fec9adcb339b7136579016ecc0"
+    },
+    "bridgePackage": {
+      "name": "@agentshouse/app-bridge",
+      "version": "0.1.0-ce524f6608238",
+      "license": "MIT",
+      "licenseSha256": "ae43fe65ba384d99678a8c190b615e1e5c4fed6af04ef4df7b5bb51626de066b",
+      "directRuntimeDependency": false,
+      "transitiveRuntimeVersion": "0.1.0-cff8ba8fa2542"
+    },
+    "limitations": [
+      "No remote schema mutation; Tasks schema replacement defect remains a platform gate.",
+      "No App allocation, binding, release branch, push or publication.",
+      "No browser, screenshot, hosted CRUD, live sync or attachment acceptance.",
+      "Existing editor/identity/attachment limitations remain unchanged.",
+      "Node 24.19.0 is below the transitive runtime/model package floor 24.21.0; Master previously accepted local builds, not hosted compatibility."
+    ]
+  },
+  "currentVerification": "reports/runtime-migration/checks.json"
+}

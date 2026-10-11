@@ -1,0 +1,1 @@
+{"name":"atomic-crm-donor-demo-reproduction","private":true,"type":"module","scripts":{"generate":"node generate.mjs"},"dependencies":{"date-fns":"3.6.0","esbuild":"0.27.4","faker":"5.5.3","lucide-react":"0.542.0","react":"19.2.4"}}

@@ -1,0 +1,212 @@
+{
+  "date": "2026-10-11",
+  "room": "crm-port",
+  "schemaRevision": "fr_q4.3.e",
+  "source": {
+    "repository": "https://github.com/marmelab/atomic-crm",
+    "commit": "8b5d47ba32190c68801a427ef7682d7a6afc14e0",
+    "license": "MIT",
+    "seed": 1150,
+    "referenceDate": "2026-10-11T12:00:00.000Z",
+    "outputSha256": "11bc054f7242a5cef8d14be3984c53477dd9a3ef3c17553846db0e60b045125c"
+  },
+  "donorCounts": {
+    "sales": 6,
+    "tags": 6,
+    "companies": 55,
+    "contacts": 500,
+    "contact_notes": 1200,
+    "deals": 50,
+    "deal_notes": 300,
+    "tasks": 400,
+    "configuration": 1
+  },
+  "donorDocuments": 2518,
+  "retainedLegacyDocuments": 87,
+  "totalDocuments": 2605,
+  "batches": 51,
+  "readback": "Every donor document was independently read after its batch and compared exactly to its schema-validated source document, excluding only transport trailing newlines. All batch receipts and exact readbacks were checked again at completion.",
+  "documentSetSha256": "954954ef071589e0d1de4e21212fd85c1d0417fe666c2363d93ca7b9f6dbb43f",
+  "originalPreservation": [
+    {
+      "paths": [
+        "/rooms/crm-port/crm/companies/aster-table.md",
+        "/rooms/crm-port/crm/companies/cedar-form.md",
+        "/rooms/crm-port/crm/companies/harbor-kite.md",
+        "/rooms/crm-port/crm/companies/juniper-thread.md",
+        "/rooms/crm-port/crm/companies/lumen-orchard.md",
+        "/rooms/crm-port/crm/companies/moss-circuit.md",
+        "/rooms/crm-port/crm/companies/sable-current.md",
+        "/rooms/crm-port/crm/companies/solstice-field.md"
+      ],
+      "sha256": "0c78fd880b96ad383358241348f27ba147e47caa5b5cd73113f8f91cdb6f2407",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/configuration/1.md",
+        "/rooms/crm-port/crm/contact_notes/amara-research.md",
+        "/rooms/crm-port/crm/contact_notes/clara-pilot.md",
+        "/rooms/crm-port/crm/contact_notes/evan-prototype.md",
+        "/rooms/crm-port/crm/contact_notes/felix-explainer.md",
+        "/rooms/crm-port/crm/contact_notes/maya-relaunch.md",
+        "/rooms/crm-port/crm/contact_notes/miles-retailers.md",
+        "/rooms/crm-port/crm/contact_notes/nora-positioning.md"
+      ],
+      "sha256": "bb54578c7a1741a38e42d3775bb21111afb634a42539f5b94d3f7d6e4cbd9713",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": true
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/contact_notes/oliver-portfolio.md",
+        "/rooms/crm-port/crm/contact_notes/rafael-launch.md",
+        "/rooms/crm-port/crm/contact_notes/sofia-packaging.md",
+        "/rooms/crm-port/crm/contact_notes/tessa-referrals.md",
+        "/rooms/crm-port/crm/contact_notes/theo-accessibility.md",
+        "/rooms/crm-port/crm/contacts/ada-wrenley.md",
+        "/rooms/crm-port/crm/contacts/amara-whitcombe.md",
+        "/rooms/crm-port/crm/contacts/arun-hollis.md"
+      ],
+      "sha256": "d9111c537a939f67775b2d57a1b09749e8696098ae22b86dbd749e3fbe983986",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/contacts/clara-ashbourne.md",
+        "/rooms/crm-port/crm/contacts/dalia-westhaven.md",
+        "/rooms/crm-port/crm/contacts/evan-sorrell.md",
+        "/rooms/crm-port/crm/contacts/felix-thornby.md",
+        "/rooms/crm-port/crm/contacts/isla-perrin.md",
+        "/rooms/crm-port/crm/contacts/ivo-sandwell.md",
+        "/rooms/crm-port/crm/contacts/jonah-beckett.md",
+        "/rooms/crm-port/crm/contacts/leila-harrow.md"
+      ],
+      "sha256": "a8f17868be90879396a35d8f37fcd555e9577b431ea050a46dd6458b7d5127ae",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/contacts/leon-hartmere.md",
+        "/rooms/crm-port/crm/contacts/maya-ellery.md",
+        "/rooms/crm-port/crm/contacts/miles-everden.md",
+        "/rooms/crm-port/crm/contacts/mina-calderwood.md",
+        "/rooms/crm-port/crm/contacts/noah-bellward.md",
+        "/rooms/crm-port/crm/contacts/nora-vellum.md",
+        "/rooms/crm-port/crm/contacts/oliver-fenwick.md",
+        "/rooms/crm-port/crm/contacts/priya-marden.md"
+      ],
+      "sha256": "a8cdf5767fb27f0234cbe62379e43c85e7051ef316b4648c988cef2821b2f379",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/contacts/rafael-cairn.md",
+        "/rooms/crm-port/crm/contacts/sofia-aldermere.md",
+        "/rooms/crm-port/crm/contacts/tessa-bramwell.md",
+        "/rooms/crm-port/crm/contacts/theo-marwood.md",
+        "/rooms/crm-port/crm/contacts/zoe-fairholt.md",
+        "/rooms/crm-port/crm/deal_notes/aster-handoff.md",
+        "/rooms/crm-port/crm/deal_notes/harbor-phasing.md",
+        "/rooms/crm-port/crm/deal_notes/juniper-proposal-review.md"
+      ],
+      "sha256": "87082f4017db5a95441b039643f11ddae83f1d10a4bc013d4863afd92bcf4e81",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/deal_notes/lumen-approval-path.md",
+        "/rooms/crm-port/crm/deal_notes/sable-outcome.md",
+        "/rooms/crm-port/crm/deal_notes/solstice-dependency.md",
+        "/rooms/crm-port/crm/deals/aster-seasonal.md",
+        "/rooms/crm-port/crm/deals/aster-tradeshow.md",
+        "/rooms/crm-port/crm/deals/cedar-leasing.md",
+        "/rooms/crm-port/crm/deals/cedar-onboarding.md",
+        "/rooms/crm-port/crm/deals/harbor-booking.md"
+      ],
+      "sha256": "704f138a0bd079a662232a907e916ae3f3ce625dc34eb2838e32fc07a21752c8",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/deals/harbor-opening.md",
+        "/rooms/crm-port/crm/deals/juniper-storefront.md",
+        "/rooms/crm-port/crm/deals/juniper-wholesale.md",
+        "/rooms/crm-port/crm/deals/lumen-dashboard.md",
+        "/rooms/crm-port/crm/deals/lumen-enterprise.md",
+        "/rooms/crm-port/crm/deals/moss-explainer.md",
+        "/rooms/crm-port/crm/deals/moss-installer.md",
+        "/rooms/crm-port/crm/deals/sable-pitch.md"
+      ],
+      "sha256": "8539bda35bc0c7c79b3cd26915092f843ad26541363249731ee51e02073d4597",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/deals/sable-portfolio.md",
+        "/rooms/crm-port/crm/deals/solstice-brand.md",
+        "/rooms/crm-port/crm/deals/solstice-retailer.md",
+        "/rooms/crm-port/crm/sales/client-success-team.md",
+        "/rooms/crm-port/crm/sales/partnerships-team.md",
+        "/rooms/crm-port/crm/sales/studio-team.md",
+        "/rooms/crm-port/crm/tags/priority.md",
+        "/rooms/crm-port/crm/tags/referral.md"
+      ],
+      "sha256": "4ed78c5dbdd2092d0d8952d90ba3ffa85b3d4fc5fc2bd8a83f15b40f3a23eaa9",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/tasks/aster-buyer.md",
+        "/rooms/crm-port/crm/tasks/aster-production.md",
+        "/rooms/crm-port/crm/tasks/cedar-leasing.md",
+        "/rooms/crm-port/crm/tasks/cedar-thanks.md",
+        "/rooms/crm-port/crm/tasks/harbor-agenda.md",
+        "/rooms/crm-port/crm/tasks/harbor-costs.md",
+        "/rooms/crm-port/crm/tasks/juniper-proof.md",
+        "/rooms/crm-port/crm/tasks/juniper-scope.md"
+      ],
+      "sha256": "9582596cbe9a62d0a3b8d8252d503e313c524e47e168c758aa9ff774d1c68b26",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    },
+    {
+      "paths": [
+        "/rooms/crm-port/crm/tasks/leon-intake.md",
+        "/rooms/crm-port/crm/tasks/lumen-budget.md",
+        "/rooms/crm-port/crm/tasks/moss-demo.md",
+        "/rooms/crm-port/crm/tasks/moss-timing.md",
+        "/rooms/crm-port/crm/tasks/sable-case-studies.md",
+        "/rooms/crm-port/crm/tasks/sable-close.md",
+        "/rooms/crm-port/crm/tasks/solstice-pilot.md",
+        "/rooms/crm-port/crm/tasks/tessa-intro.md"
+      ],
+      "sha256": "b96768ffa97d2f12a6fe200485726abd10fda7b3551a57f1c038714fa038580f",
+      "matchesOriginalsExceptAuthorizedConfig": true,
+      "configurationReplaced": false
+    }
+  ],
+  "schemaUntouched": true,
+  "configurationReplaced": true,
+  "deletions": 0,
+  "publication": "Not performed by dataset worker",
+  "limitations": [
+    "The Room includes retained legacy synthetic documents; it is not exclusively source-derived.",
+    "Remote donor media is omitted for honest initials or an explicit local unavailable-image placeholder."
+  ],
+  "singletonConfiguration": {
+    "path": "/rooms/crm-port/crm/configuration/1.md",
+    "beforeRevision": "fr_mm.1.1",
+    "afterRevision": "fr_mm.2.d",
+    "oldContentExactlyMatchedKnownLegacySample": true,
+    "newContentExactlyMatchedDonorConfig": true
+  }
+}
