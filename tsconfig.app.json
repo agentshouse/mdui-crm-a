@@ -33,5 +33,5 @@
     }
   },
   "include": ["src", "tests"],
-  "exclude": ["src/**/*.stories.*"]
+  "exclude": ["src/**/*.stories.*", "tests/support/donor-demo/upstream"]
 }

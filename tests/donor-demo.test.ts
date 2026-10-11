@@ -10,7 +10,7 @@ const hash = (value: string | Buffer) =>
 test("full pinned Atomic CRM generator output preserves all records and references", () => {
   const manifest = JSON.parse(
     readFileSync(
-      new URL("../scripts/donor-demo/provenance.json", import.meta.url),
+      new URL("./support/donor-demo/provenance.json", import.meta.url),
       "utf8",
     ),
   );
@@ -29,14 +29,14 @@ test("full pinned Atomic CRM generator output preserves all records and referenc
   expect(
     hash(
       readFileSync(
-        new URL("../scripts/donor-demo/records.json", import.meta.url),
+        new URL("./support/donor-demo/records.json", import.meta.url),
       ),
     ),
   ).toBe(manifest.outputSha256);
   expect(
     hash(
       readFileSync(
-        new URL("../scripts/donor-demo/package-lock.json", import.meta.url),
+        new URL("./support/donor-demo/package-lock.json", import.meta.url),
       ),
     ),
   ).toBe(manifest.lockSha256);
@@ -44,7 +44,7 @@ test("full pinned Atomic CRM generator output preserves all records and referenc
     expect(
       hash(
         readFileSync(
-          new URL(`../scripts/donor-demo/upstream/${path}`, import.meta.url),
+          new URL(`./support/donor-demo/upstream/${path}`, import.meta.url),
         ),
       ),
     ).toBe(expected);

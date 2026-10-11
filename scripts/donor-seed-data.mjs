@@ -15,7 +15,7 @@ const resourceTypes = {
   configuration: "crm_configuration",
 };
 export const seedRecords = JSON.parse(
-  readFileSync(new URL("./donor-demo/records.json", import.meta.url), "utf8"),
+  readFileSync(new URL("../tests/support/donor-demo/records.json", import.meta.url), "utf8"),
 );
 /** Keep all frontmatter values primitive; JSON text stays under its donor key. */
 export function serializeSeedRecord(resource, record) {
