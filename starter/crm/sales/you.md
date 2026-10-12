@@ -1,8 +1,8 @@
 ---
 type: "crm_sale"
 id: "you"
-first_name: "You"
-last_name: ""
+first_name: "Your"
+last_name: "name"
 email: ""
 secondary_emails: "[]"
 administrator: "true"
@@ -10,4 +10,4 @@ disabled: "false"
 avatar: "{}"
 ---
 
-# You
+# Your name
