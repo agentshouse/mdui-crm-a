@@ -1,13 +1,13 @@
 import { toSlug } from "./lib/toSlug";
 import { BusinessDraft } from "./business-draft";
 import { mergeDraftParts, type RoomDraft } from "./draft-session";
-import { connectHouseBridge } from "@agentshouse/app-bridge";
+import { houseBridge } from "@agentshouse/app-bridge";
 import type { DataProvider, Identifier, RaRecord } from "ra-core";
 import type { ConfigurationContextValue } from "./components/atomic-crm/root/ConfigurationContext";
 import type { Contact, Deal } from "./components/atomic-crm/types";
 
 // The sole bridge/Runtime boundary. All records live in the selected House Room.
-export type HouseRuntime = Awaited<ReturnType<typeof connectHouseBridge>["runtime"]>;
+export type HouseRuntime = Awaited<ReturnType<typeof houseBridge>["runtime"]>;
 export type HouseRoom = Awaited<ReturnType<HouseRuntime["rooms"]>>[number];
 export type MutationStatus = {
   phase: "saving" | "queued" | "error" | "idle";
@@ -157,7 +157,8 @@ function validId(value: unknown): string {
 let connection: Promise<HouseRuntime> | undefined;
 export function houseRuntime(): Promise<HouseRuntime> {
   connection ??= (async () => {
-    const bridge = connectHouseBridge();
+    const bridge = houseBridge();
+    if (!bridge) throw new Error("house_bridge_absent");
     bridge.setTab({ title: "CRM" });
     return bridge.runtime;
   })().catch((error: unknown) => {

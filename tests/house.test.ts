@@ -21,7 +21,7 @@ import {
   type HouseRuntime,
   type MutationStatus,
 } from "../src/house";
-vi.mock("@agentshouse/app-bridge", () => ({ connectHouseBridge: vi.fn() }));
+vi.mock("@agentshouse/app-bridge", () => ({ houseBridge: vi.fn() }));
 
 const ROOM = "house://crm-test";
 const typeNames: Record<string, string> = {
