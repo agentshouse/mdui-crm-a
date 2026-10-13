@@ -17,7 +17,7 @@ export const NoteAttachments = ({ note }: { note: ContactNote | DealNote }) => {
       {images.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {images.map((asset) => (
-            <div key={asset.attachment_ref}>
+            <div key={asset.path}>
               <RoomAssetImage
                 asset={asset}
                 alt={asset.title}
@@ -29,7 +29,7 @@ export const NoteAttachments = ({ note }: { note: ContactNote | DealNote }) => {
         </div>
       )}
       {documents.map((asset) => (
-        <div key={asset.attachment_ref} className="flex items-center gap-2">
+        <div key={asset.path} className="flex items-center gap-2">
           <Paperclip className="w-4 h-4" />
           <RoomAssetDownload asset={asset} />
         </div>

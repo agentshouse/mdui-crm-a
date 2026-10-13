@@ -1,3 +1,4 @@
+import { isBinaryPath } from "./binary-path";
 import { toSlug } from "./lib/toSlug";
 import { BusinessDraft } from "./business-draft";
 import { mergeDraftParts, type RoomDraft } from "./draft-session";
@@ -17,7 +18,7 @@ export type MutationStatus = {
 export type QueuedWrite = { outcome: "queued"; identifier: string };
 /** Persist only this Room attachment descriptor; object URLs remain UI-only. */
 export type HouseAttachment = {
-  attachment_ref: string;
+  path: string;
   title: string;
   type: string;
   size?: number;
@@ -217,13 +218,7 @@ function storedValue(kind: FieldKind, value: unknown): unknown {
   return value;
 }
 function attachmentRef(value: unknown): string {
-  if (
-    typeof value !== "string" ||
-    !value.startsWith("at_") ||
-    value.length <= 3 ||
-    /[\s/\\]/.test(value)
-  )
-    refused("Expected a House at_ attachment reference for this Room.");
+  if (!isBinaryPath(value)) refused("Expected a relative binary file path in this Room.");
   return value;
 }
 function validateAttachment(value: unknown): asserts value is HouseAttachment {
@@ -231,7 +226,7 @@ function validateAttachment(value: unknown): asserts value is HouseAttachment {
     refused("Invalid House attachment descriptor.");
   const asset = value as Record<string, unknown>;
   const allowed = new Set([
-    "attachment_ref",
+    "path",
     "title",
     "type",
     "size",
@@ -241,7 +236,7 @@ function validateAttachment(value: unknown): asserts value is HouseAttachment {
     refused(
       "Images and attachments must use a House Room reference, without URLs, raw files, or embedded data.",
     );
-  attachmentRef(asset.attachment_ref);
+  attachmentRef(asset.path);
   if (
     typeof asset.title !== "string" ||
     !asset.title.trim() ||
@@ -270,168 +265,6 @@ async function attachmentDigest(blob: Blob): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) =>
     byte.toString(16).padStart(2, "0"),
   ).join("");
-}
-async function attachmentUploadInput(file: File, room: string) {
-  if (!(file instanceof File) || !file.name.trim())
-    refused("Choose a named file to upload.");
-  return {
-    room_ref: room,
-    version: crypto.randomUUID(),
-    name: file.name,
-    bytes: file.size,
-    sha256: await attachmentDigest(file),
-    media_type: file.type || "application/octet-stream",
-    blob: file,
-  };
-}
-function actionValue(
-  action: string,
-  response: Awaited<ReturnType<HouseRuntime["call"]>>,
-): unknown {
-  if (!response || response.kind !== "action") {
-    const detail = JSON.stringify(response) ?? String(response);
-    refused(`House ${action} did not complete: ${detail}`, response);
-  }
-  return response.result;
-}
-type AttachmentRecord = {
-  original: unknown;
-  version: string;
-  attachment: string;
-  name: string;
-  bytes: number;
-  sha256: string;
-  media_type: string | null;
-  save: { status: "pending" | "saved" | "failed"; failure: string | null };
-  storage: { provider: "house" | "connected"; scope: string };
-  read?: { status: AttachmentRead["status"] };
-  blob?: Blob;
-};
-function objectResult(value: unknown, label: string): Record<string, unknown> {
-  if (
-    !value ||
-    typeof value !== "object" ||
-    Array.isArray(value) ||
-    value instanceof Blob
-  )
-    refused(`Unsupported ${label} result shape.`, value);
-  return value as Record<string, unknown>;
-}
-function exactKeys(
-  value: Record<string, unknown>,
-  allowed: string[],
-  required: string[],
-  label: string,
-) {
-  if (
-    Object.keys(value).some((key) => !allowed.includes(key)) ||
-    required.some((key) => !Object.hasOwn(value, key))
-  )
-    refused(`Unsupported ${label} result keys.`, value);
-}
-function uploadFailure(value: Record<string, unknown>) {
-  if (Object.hasOwn(value, "upload_failure"))
-    refused(
-      `House attachment upload failed: ${JSON.stringify(value.upload_failure)}`,
-      value,
-    );
-}
-function attachmentRecord(
-  value: unknown,
-  room: string,
-  allowRead: boolean,
-): AttachmentRecord {
-  const record = objectResult(value, "attachment");
-  uploadFailure(record);
-  const required = [
-    "original",
-    "version",
-    "attachment",
-    "name",
-    "bytes",
-    "sha256",
-    "media_type",
-    "save",
-    "storage",
-  ];
-  exactKeys(
-    record,
-    [...required, ...(allowRead ? ["read", "blob"] : [])],
-    required,
-    "attachment",
-  );
-  attachmentRef(record.attachment);
-  if (
-    typeof record.version !== "string" ||
-    !record.version ||
-    typeof record.name !== "string" ||
-    !record.name ||
-    typeof record.bytes !== "number" ||
-    !Number.isSafeInteger(record.bytes) ||
-    record.bytes < 0 ||
-    typeof record.sha256 !== "string" ||
-    !/^[a-f0-9]{64}$/.test(record.sha256) ||
-    (record.media_type !== null && typeof record.media_type !== "string")
-  )
-    refused("Unsupported attachment metadata shape.", record);
-  const save = objectResult(record.save, "attachment save");
-  exactKeys(
-    save,
-    ["status", "failure"],
-    ["status", "failure"],
-    "attachment save",
-  );
-  if (
-    !["pending", "saved", "failed"].includes(String(save.status)) ||
-    (save.failure !== null && typeof save.failure !== "string")
-  )
-    refused("Unsupported attachment save state.", record);
-  if (save.status === "failed")
-    refused(
-      `House attachment save failed: ${JSON.stringify(save.failure)}`,
-      record,
-    );
-  const storage = objectResult(record.storage, "attachment storage");
-  exactKeys(
-    storage,
-    ["provider", "scope"],
-    ["provider", "scope"],
-    "attachment storage",
-  );
-  if (
-    !["house", "connected"].includes(String(storage.provider)) ||
-    storage.scope !== room
-  )
-    refused("This attachment is not bound to the selected House Room.", record);
-  if (record.read !== undefined) {
-    const read = objectResult(record.read, "attachment read");
-    exactKeys(read, ["status"], ["status"], "attachment read");
-    if (
-      !["available", "not_saved", "unavailable"].includes(String(read.status))
-    )
-      refused("Unsupported attachment read state.", record);
-  }
-  if (record.blob !== undefined && !(record.blob instanceof Blob))
-    refused(
-      "Unsupported attachment bytes; Runtime must return a Blob.",
-      record,
-    );
-  return record as unknown as AttachmentRecord;
-}
-function uploadedAttachment(
-  value: unknown,
-  room: string,
-): { reference: string; pending: boolean | null; metadata?: AttachmentRecord } {
-  const record = objectResult(value, "attachment upload");
-  uploadFailure(record);
-  if (Object.keys(record).length === 1 && Object.hasOwn(record, "attachment"))
-    return { reference: attachmentRef(record.attachment), pending: null };
-  const full = attachmentRecord(record, room, false);
-  return {
-    reference: full.attachment,
-    pending: full.save.status === "pending",
-    metadata: full,
-  };
 }
 function changedAttachments(changes: (Change | null)[]): HouseAttachment[] {
   const attachments: HouseAttachment[] = [];
@@ -1048,7 +881,7 @@ async function queueChanges(
   const saved = await md.save(room, drafts);
   if (saved.outcome !== "saved")
     refused(
-      `House did not queue this change: ${saved.rule}. Drafts have been kept.`,
+      `House did not queue this change: ${saved.code}. Drafts have been kept.`,
       saved,
     );
   return { outcome: "queued", identifier: saved.identifier };
@@ -1128,39 +961,19 @@ export function createHouseDataProvider(
   };
   const getAttachment = async (reference: string): Promise<AttachmentRead> => {
     assertAvailable();
-    const attachment_ref = attachmentRef(reference);
-    const result = actionValue(
-      "attachments/get",
-      await md.call("attachments/get", { room_ref: room, attachment_ref }),
-    );
-    const record = attachmentRecord(result, room, true);
-    if (record.attachment !== attachment_ref)
-      refused("House returned a different attachment reference.", result);
-    const blob = record.blob ?? null;
-    if (blob && blob.size !== record.bytes)
-      refused(
-        "House attachment byte length does not match its metadata.",
-        result,
-      );
-    if (blob && (await attachmentDigest(blob)) !== record.sha256)
-      refused("House attachment SHA-256 does not match its metadata.", result);
-    if (record.read?.status === "available" && !blob)
-      refused(
-        "House reported an available attachment without Blob bytes.",
-        result,
-      );
-    if (blob && record.read && record.read.status !== "available")
-      refused(
-        "House returned attachment bytes with an incompatible read status.",
-        result,
-      );
-    verifiedAttachmentRefs.add(attachment_ref);
-    return {
-      blob,
-      name: record.name,
-      type: record.media_type,
-      status: blob ? "available" : (record.read?.status ?? "unavailable"),
-    };
+    const path = attachmentRef(reference);
+    const found = await md.query({ rooms: [room], pathPrefix: path.slice(0, path.lastIndexOf("/")), select: "all" });
+    assertAvailable();
+    const metadata = found.documents.find(item => item.room === room && item.path === path)?.binaryFile;
+    if (!metadata) refused("The binary file is not declared in the selected Room.");
+    const answer = await md.binaryFile.read(room, path);
+    assertAvailable();
+    if (answer.kind !== "binary") return { blob: null, name: path.split("/").at(-1)!, type: metadata.mediaType, status: "unavailable" };
+    if (answer.blob.size !== metadata.byteLength || await attachmentDigest(answer.blob) !== metadata.sha256)
+      refused("House binary file content does not match its size or SHA-256 metadata.");
+    verifiedAttachmentRefs.add(path);
+    const blob = answer.blob.type === metadata.mediaType ? answer.blob : new Blob([await answer.blob.arrayBuffer()], { type: metadata.mediaType });
+    return { blob, name: path.split("/").at(-1)!, type: metadata.mediaType, status: "available" };
   };
   const mutation = <T>(
     operation: (
@@ -1184,12 +997,13 @@ export function createHouseDataProvider(
         const result = await operation(
           async (changes, prepared) => {
             for (const asset of changedAttachments(changes)) {
-              if (!verifiedAttachmentRefs.has(asset.attachment_ref)) {
-                // Rooms is the installed Runtime's local, provider-declared metadata.
-                // Save must never perform an attachment Action or fetch bytes.
-                const known=(await md.rooms()).find(candidate=>candidate.locator===room)?.attachments.find(candidate=>candidate.reference===asset.attachment_ref);
-                if(!known)refused("This attachment is not declared in the selected Room's local metadata. Your draft is kept.");
-                if((asset.size!==undefined&&asset.size!==known.byteLength)||(known.mediaType!==null&&asset.type!==known.mediaType))refused("Attachment metadata does not match the selected Room's declaration.");
+              if (!verifiedAttachmentRefs.has(asset.path)) {
+                const found = await md.query({ rooms: [room], pathPrefix: asset.path.slice(0, asset.path.lastIndexOf("/")), select: "all" });
+                assertAvailable();
+                const known = found.documents.find(item => item.room === room && item.path === asset.path)?.binaryFile;
+                if (!known) refused("This binary file is not declared in the selected Room. Your draft is kept.");
+                if ((asset.size !== undefined && asset.size !== known.byteLength) || asset.type !== known.mediaType || (asset.sha256 !== undefined && asset.sha256 !== known.sha256))
+                  refused("File metadata does not match the selected Room's declaration.");
               }
             }
             const receipt = await queueChanges(md, room, changes, assertAvailable, prepared);
@@ -1380,50 +1194,21 @@ export function createHouseDataProvider(
     },
     getAttachment,
     uploadAttachment(file: File): Promise<HouseAttachment> {
-      let completion: MutationStatus = {
-        phase: "idle",
-        message: "File received by House. Save the form to link it.",
-      };
-      return mutation(
-        async (_save, assertWritable) => {
-          const input = await attachmentUploadInput(file, room);
-          assertWritable();
-          const result = actionValue(
-            "attachments/upload",
-            await md.call("attachments/upload", input),
-          );
-          const uploaded = uploadedAttachment(result, room);
-          if (
-            uploaded.metadata &&
-            (uploaded.metadata.bytes !== input.bytes ||
-              uploaded.metadata.sha256 !== input.sha256)
-          )
-            refused(
-              "House returned attachment metadata that does not match the uploaded file.",
-              result,
-            );
-          verifiedAttachmentRefs.add(uploaded.reference);
-          if (uploaded.pending === true)
-            completion = {
-              phase: "queued",
-              message:
-                "Attachment save is pending in House. It is not linked until you save the form.",
-            };
-          else if (uploaded.pending === false)
-            completion = {
-              phase: "idle",
-              message: "Attachment stored in House. Save the form to link it.",
-            };
-          return {
-            attachment_ref: uploaded.reference,
-            title: input.name,
-            type: input.media_type,
-            size: input.bytes,
-            sha256: input.sha256,
-          };
-        },
-        () => completion,
-      );
+      let completion: MutationStatus = { phase: "queued", message: "File queued locally. Save the form to link it." };
+      return mutation(async () => {
+        if (!(file instanceof File) || !file.name.trim()) refused("Choose a named file to upload.");
+        const path = `files/${crypto.randomUUID()}`;
+        const digest = await attachmentDigest(file);
+        assertAvailable();
+        const draft = await md.roomDraft.write(room, path, null, { file: { blob: file } });
+        if (draft.outcome !== "written" || !draft.roomDraft) refused(`File draft was not written (${draft.outcome}).`, draft);
+        const saved = await md.save(room, [{ path, revision: draft.roomDraft.revision }]);
+        if (saved.outcome !== "saved") refused(`File save was refused (${saved.code}). Its draft is kept.`, saved);
+        assertAvailable();
+        verifiedAttachmentRefs.add(path);
+        completion = { ...completion, identifier: saved.identifier };
+        return { path, title: file.name, type: file.type || "application/octet-stream", size: file.size, sha256: digest };
+      }, () => completion);
     },
     async getList(resource: string, params: any) {
       const result = listRows(resource, await fetchDb(), params);

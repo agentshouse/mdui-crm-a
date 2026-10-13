@@ -282,7 +282,7 @@ describe("Room note editing without authentication", () => {
   });
   it("accepts a completed Room attachment without text, retains it on rejected save, and resets it after success", async () => {
     const asset: HouseAttachment = {
-      attachment_ref: "at_note-fixture",
+      path: "files/note-fixture",
       title: "evidence.pdf",
       type: "application/pdf",
     };

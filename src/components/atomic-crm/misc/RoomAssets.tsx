@@ -1,3 +1,4 @@
+import { isBinaryPath as validReference } from "@/binary-path";
 /* eslint-disable react-refresh/only-export-components -- Raster validation is shared with the focused safety tests. */
 import { useEffect, useId, useRef, useState } from "react";
 import { useDataProvider } from "ra-core";
@@ -16,8 +17,6 @@ const imageTypes = new Set([
   "image/avif",
 ]);
 const MAX_PREVIEW = 10 * 1024 * 1024;
-const validReference = (value: unknown): value is string =>
-  typeof value === "string" && /^at_[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(value);
 /** Only explicit raster signatures can be inserted in image elements. SVG/HTML never preview. */
 export async function isSafeRaster(blob: Blob): Promise<boolean> {
   if (!imageTypes.has(blob.type.toLowerCase()) || blob.size > MAX_PREVIEW)
@@ -62,7 +61,7 @@ export function RoomAssetImage({
     observer.observe(marker.current);
     return () => observer.disconnect();
   }, [visible]);
-  const ref = asset?.attachment_ref;
+  const ref = asset?.path;
   useEffect(() => {
     let disposed = false;
     let objectUrl = "";
@@ -136,9 +135,9 @@ export function RoomAssetDownload({ asset }: { asset: HouseAttachment }) {
     setNotice("");
     let url = "";
     try {
-      if (!validReference(asset.attachment_ref))
+      if (!validReference(asset.path))
         throw new Error("This is not a valid Room attachment reference.");
-      const result = await provider.getAttachment(asset.attachment_ref);
+      const result = await provider.getAttachment(asset.path);
       const blob = result.blob;
       if (!blob) {
         setNotice(result.name);
@@ -300,7 +299,7 @@ export function RoomAssetInput({
       )}
       {values.map((asset, index) => (
         <div
-          key={`${asset.attachment_ref}-${index}`}
+          key={`${asset.path}-${index}`}
           className="flex items-center gap-2 rounded-md border p-2"
         >
           <div className="min-w-0">

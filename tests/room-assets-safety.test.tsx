@@ -18,7 +18,7 @@ const provider = vi.hoisted(() => ({
 }));
 vi.mock("ra-core", () => ({ useDataProvider: () => provider }));
 const descriptor = {
-  attachment_ref: "at_safe.1",
+  path: "files/safe.1",
   title: "photo.png",
   type: "image/png",
   size: 8,
@@ -62,7 +62,7 @@ describe("Room asset resource guards", () => {
       const asset = { ...descriptor, src, url: src };
       render(<RoomAssetImage asset={asset} alt="Controlled preview" />);
       const image = await screen.findByAltText("Controlled preview");
-      expect(provider.getAttachment).toHaveBeenCalledWith("at_safe.1");
+      expect(provider.getAttachment).toHaveBeenCalledWith("files/safe.1");
       expect(image).toHaveAttribute("src", "blob:controlled-room-file");
       expect(image).not.toHaveAttribute("src", src);
       expect(create).toHaveBeenCalledWith(expect.any(Blob));
@@ -126,7 +126,7 @@ describe("Room asset resource guards", () => {
     );
     rerender(
       <RoomAssetImage
-        asset={{ ...descriptor, attachment_ref: "at_safe.2" }}
+        asset={{ ...descriptor, path: "files/safe.2" }}
         alt="Current preview"
       />,
     );
@@ -165,7 +165,7 @@ describe("Room asset resource guards", () => {
     fireEvent.click(screen.getByRole("button"));
     await waitFor(() => expect(href).toBe("blob:controlled-room-file"));
     expect(name).toBe(".._.._file_.txt");
-    expect(provider.getAttachment).toHaveBeenCalledWith("at_safe.1");
+    expect(provider.getAttachment).toHaveBeenCalledWith("files/safe.1");
     expect(create).toHaveBeenCalledWith(expect.any(Blob));
   });
   it.each([
@@ -176,10 +176,10 @@ describe("Room asset resource guards", () => {
     "at_x\u0000",
   ])(
     "rejects a masquerading attachment reference %s before provider dispatch",
-    async (attachment_ref) => {
+    async (path) => {
       render(
         <RoomAssetImage
-          asset={{ ...descriptor, attachment_ref }}
+          asset={{ ...descriptor, path }}
           alt="Invalid preview"
         />,
       );

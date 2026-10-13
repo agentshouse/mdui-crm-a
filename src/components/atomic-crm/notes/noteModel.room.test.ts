@@ -5,7 +5,7 @@ import {
 } from "./noteModel";
 
 const completed = {
-  attachment_ref: "at_note-fixture",
+  path: "files/note-fixture",
   title: "evidence.pdf",
   type: "application/pdf",
 };
@@ -27,10 +27,10 @@ describe("Room note text-or-attachment validation", () => {
   );
 
   it("accepts an attachment-only note without inventing reference length or encoding rules", () => {
-    for (const ref of ["at_a", "at_opaque-ID:version", "at_123456789"]) {
+    for (const ref of ["files/a", "files/opaque-ID-version", "images/123456789"]) {
       expect(
         validateNoteOrAttachmentRequired("", {
-          attachments: [{ ...completed, attachment_ref: ref }],
+          attachments: [{ ...completed, path: ref }],
         }),
       ).toBeUndefined();
     }
@@ -47,15 +47,15 @@ describe("Room note text-or-attachment validation", () => {
     null,
     {},
     { title: "pending.pdf", type: "application/pdf" },
-    { ...completed, attachment_ref: "" },
-    { ...completed, attachment_ref: "at_" },
-    { ...completed, attachment_ref: "remote_id" },
-    { ...completed, attachment_ref: "at_has space" },
-    { ...completed, attachment_ref: "at_has/path" },
-    { ...completed, attachment_ref: "at_has\\path" },
-    { ...completed, attachment_ref: "https://example.invalid/attachment" },
-    { ...completed, attachment_ref: "blob:pending" },
-    { ...completed, attachment_ref: "data:text/plain,raw" },
+    { ...completed, path: "" },
+    { ...completed, path: "at_" },
+    { ...completed, path: "remote_id" },
+    { ...completed, path: "at_has space" },
+    { ...completed, path: "files/../path" },
+    { ...completed, path: "at_has\\path" },
+    { ...completed, path: "https://example.invalid/attachment" },
+    { ...completed, path: "blob:pending" },
+    { ...completed, path: "data:text/plain,raw" },
     { ...completed, src: "blob:pending" },
     { ...completed, rawFile: {} },
     { ...completed, url: "https://example.invalid/attachment" },

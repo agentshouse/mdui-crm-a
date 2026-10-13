@@ -35,7 +35,7 @@ it('retains refusal, returned-draft, storage-loss and read-only warnings',async(
  act(()=>{harness.observations.get('sync').emit({lastCompleted:'2026-10-11T13:00:00Z',attentionRequired:[{}]});harness.observations.get('mode').emit('write-halted');});
  expect(screen.getByText(/returned changes that need attention/)).toBeInTheDocument();expect(screen.getByText(/uploads are paused/)).toBeInTheDocument();
  act(()=>harness.observations.get('storage').emit('storage-loss'));expect(screen.getByText(/storage-loss/)).toBeInTheDocument();
- act(()=>harness.observations.get('refusal').emit({reason:'revoked-authorization'}));await waitFor(()=>expect(screen.getByText('CRM content')).not.toBeVisible());expect(screen.getByRole('alert')).toHaveTextContent('revoked-authorization');
+ act(()=>harness.observations.get('refusal').emit({code:'revoked-authorization',retryable:false}));await waitFor(()=>expect(screen.getByText('CRM content')).not.toBeVisible());expect(screen.getByRole('alert')).toHaveTextContent('revoked-authorization');
 });
 
 it('waits for completed sync and recovers when the sole Room arrives later',async()=>{

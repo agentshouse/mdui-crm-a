@@ -13,7 +13,7 @@ const reviewedVitePreloadSource =
   'function(){let e=document.createElement(`link`).relList;if(e&&e.supports&&e.supports(`modulepreload`))return;for(let e of document.querySelectorAll(`link[rel="modulepreload"]`))n(e);new MutationObserver(e=>{for(let t of e)if(t.type===`childList`)for(let e of t.addedNodes)e.tagName===`LINK`&&e.rel===`modulepreload`&&n(e)}).observe(document,{childList:!0,subtree:!0});function t(e){let t={};return e.integrity&&(t.integrity=e.integrity),e.referrerPolicy&&(t.referrerPolicy=e.referrerPolicy),t.credentials=e.crossOrigin===`use-credentials`?`include`:e.crossOrigin===`anonymous`?`omit`:`same-origin`,t}function n(e){if(e.ep)return;e.ep=!0;let n=t(e);fetch(e.href,n)}}';
 const reviewedRoomAssets = {
   source: "src/components/atomic-crm/misc/RoomAssets.tsx",
-  sha256: "42abf795d099402ab7a08cdd029732055bd64cad47bc0585886ee08fccb6a6dc",
+  sha256: "2c7076f4ba989bd29cf62ee964ab4de9fd1d3dfa8e8e40b60bdfc6a5e1cc9225",
 };
 const dist = path.join(root, "dist");
 const references = new Set();

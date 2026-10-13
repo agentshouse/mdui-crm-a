@@ -38,7 +38,7 @@ export default function App() {
     listen(observeRoomDrafts(md), value => { if (value.some(d => d.returned)) setAttention('A Room draft needs attention. Resolve it in House before editing that document again.'); }),
     listen(observeServiceMode(md), value => setHalted(value === 'write-halted')),
     listen(observeStorageLoss(md), value => { if (value) setAttention(`House storage warning: ${value}`); }),
-    listen(observeConnectionRefusal(md), value => { refused = Boolean(value); setFatal(refused); setError(value ? `House connection refused: ${value.reason}` : ''); refresh(); }),
+    listen(observeConnectionRefusal(md), value => { refused = Boolean(value); setFatal(refused); setError(value ? `House connection refused: ${value.code}` : ''); refresh(); }),
    ]);
   }
   void connect().catch(err => { if (!disposed) { available.current = false; setError(errorText(err)); setFatal(true); } });

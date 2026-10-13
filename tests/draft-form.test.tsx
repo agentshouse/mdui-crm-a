@@ -15,7 +15,7 @@ describe('mounted donor CRM forms',()=>{
   let mounted=view();await waitFor(()=>expect(f.md.observe).toHaveBeenCalled());
   fireEvent.change(screen.getByLabelText('Company name'),{target:{value:'Typed company'}});fireEvent.change(screen.getByLabelText('Size'),{target:{value:'-'}});
   await waitFor(()=>expect(f.drafts.get(row._house.path)?.parts.fields.size.value).toBe('-'));expect(f.md.save).not.toHaveBeenCalled();
-  mounted.unmount();mounted=view();await waitFor(()=>expect(screen.getByLabelText('Company name')).toHaveValue('Typed company'));expect(screen.getByLabelText('Size')).toHaveValue('-');
+  mounted.unmount();mounted=view();await waitFor(()=>{expect(screen.getByLabelText('Company name')).toHaveValue('Typed company');expect(screen.getByLabelText('Size')).toHaveValue('-')});
   fireEvent.click(screen.getByText('Save document'));await waitFor(()=>expect(errors.length).toBe(1));expect(f.md.save).not.toHaveBeenCalled();expect(f.drafts.get(row._house.path).parts.fields.size.value).toBe('-');
   const other=await f.provider.openFormDraft('companies',row,row);await act(async()=>{await other.stage('city','Other tab city')});expect(screen.getByLabelText('City')).toHaveValue('Other tab city');
   fireEvent.change(screen.getByLabelText('Size'),{target:{value:'12.50'}});await waitFor(()=>expect(f.drafts.get(row._house.path).parts.fields.size.value).toBe('12.50'));

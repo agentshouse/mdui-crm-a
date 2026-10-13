@@ -1,0 +1,10 @@
+{
+  "sourceCommit": "c8fa3a4cfbc6ccee218294ed3a8b2b2440cd528b",
+  "sha256": {
+    "crm/companies/first.md": "54212d22e10c4869c7528405c1f78a6327f77cdf3aa160a36180186897449967",
+    "crm/contacts/first.md": "b8767d66a409b214845505ef85c6531d28c6e3f4cb60c9f8fcda5c9a1cfc6ee0",
+    "crm/deals/first.md": "e8f82ce499ab4bae0e67efa5be3038fe18080f99560943effb173740337afe93",
+    "crm/sales/you.md": "0b41ccfe802dbac97f961f8ecba852cbeabb20ad885f95bcb0c44a9f229a3679",
+    "crm/tasks/first.md": "fb6c9de6808cb65e0ceeadc906ce71aba6b465f73577a1cfc261fcce0447d448"
+  }
+}

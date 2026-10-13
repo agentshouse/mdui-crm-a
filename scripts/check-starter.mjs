@@ -1,3 +1,4 @@
+import { checkCurrentStarter } from './check-current-starter.mjs';
 /* eslint-disable no-console -- Reports starter validation. */
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -18,21 +19,19 @@ function walk(directory) {
 walk('starter')
 assert(Object.keys(documents).length > 0)
 assert.equal(validate({ 'settings/schema.yaml': schema, ...documents }, { binaryTargets: [] }, model.model).verdict, 'accept')
-const { buildSeedChanges, seedRecords } = await import('./donor-seed-data.mjs')
-const originals = new Map(buildSeedChanges('example').changes.map(row => [row.path.replace('/rooms/example/', ''), row.content]))
+checkCurrentStarter(documents);
 const selected = new Map()
 for (const [file, content] of Object.entries(documents)) {
-  assert.equal(content, originals.get(file), 'Starter must preserve original licensed example paths and bytes.')
   const result = parse(content, file); assert(result.ok)
   const [, resource, filename] = file.split('/')
-  const original = seedRecords[resource].find(row => row.id === filename.slice(0, -3))
-  assert(original); selected.set(`${resource}/${original.id}`, original)
+  const row = result.document.fields
+  assert.equal(row.id, filename.slice(0, -3)); selected.set(`${resource}/${row.id}`, row)
 }
 for (const row of selected.values()) {
   for (const [key, target] of Object.entries({company_id:'companies',contact_id:'contacts',deal_id:'deals',sales_id:'sales'})) {
     if(row[key] != null) assert(selected.has(`${target}/${row[key]}`), `Missing ${key}: ${row[key]}`)
   }
-  for(const id of row.contact_ids ?? []) assert(selected.has(`contacts/${id}`))
-  for(const id of row.tags ?? []) assert(selected.has(`tags/${id}`))
+  for(const id of JSON.parse(row.contact_ids ?? "[]")) assert(selected.has(`contacts/${id}`))
+  for(const id of JSON.parse(row.tags ?? "[]")) assert(selected.has(`tags/${id}`))
 }
-console.log(`PASS: ${selected.size} original licensed starter records with complete references.`)
+console.log(`PASS: ${selected.size} current Starter records with complete references.`)

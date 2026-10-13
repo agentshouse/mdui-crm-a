@@ -18,7 +18,7 @@ const provider = vi.hoisted(() => ({
 }));
 vi.mock("ra-core", () => ({ useDataProvider: () => provider }));
 const descriptor = {
-  attachment_ref: "at_sample.1",
+  path: "files/sample.1",
   title: "mock.png",
   type: "image/png",
   size: 8,
@@ -77,7 +77,7 @@ describe("Room asset UI", () => {
       <RoomAssetImage asset={descriptor} alt="Company logo" />,
     );
     const img = await screen.findByAltText("Company logo");
-    expect(provider.getAttachment).toHaveBeenCalledWith("at_sample.1");
+    expect(provider.getAttachment).toHaveBeenCalledWith("files/sample.1");
     expect(img).toHaveAttribute("src", "blob:room-preview");
     unmount();
     expect(revoke).toHaveBeenCalledWith("blob:room-preview");
@@ -112,7 +112,7 @@ describe("Room asset UI", () => {
   it("blocks malformed external references before dispatch", async () => {
     render(
       <RoomAssetImage
-        asset={{ ...descriptor, attachment_ref: "https://example.com/a.png" }}
+        asset={{ ...descriptor, path: "https://example.com/a.png" }}
         alt="Company logo"
       />,
     );
@@ -144,7 +144,7 @@ describe("Room asset UI", () => {
     expect(screen.getByTestId("value")).toHaveTextContent("[]");
     await act(async () => resolve(descriptor));
     await waitFor(() =>
-      expect(screen.getByTestId("value")).toHaveTextContent("at_sample.1"),
+      expect(screen.getByTestId("value")).toHaveTextContent("files/sample.1"),
     );
     fireEvent.click(screen.getByText("Save record"));
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));

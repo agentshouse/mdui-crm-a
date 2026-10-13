@@ -17,7 +17,7 @@ export function fixture(){
     drafts.set(path,next);emit();return{outcome:'written',roomDraft:structuredClone(next)};
    }),discard:vi.fn(),
   },
-  save:vi.fn(async(_room:string,items:any[])=>{for(const item of items){const d=drafts.get(item.path);if(d?.revision!==item.revision)return{outcome:'refused',rule:'stale'};}for(const item of items)drafts.delete(item.path);emit();return{outcome:'saved',identifier:'local-only'}}),
+  save:vi.fn(async(_room:string,items:any[])=>{for(const item of items){const d=drafts.get(item.path);if(d?.revision!==item.revision)return{outcome:'refused',code: 'stale', retryable: false};}for(const item of items)drafts.delete(item.path);emit();return{outcome:'saved',identifier:'local-only'}}),
  };
  const provider=createHouseDataProvider(md as unknown as HouseRuntime,room,{observed:true});provider.setObservedSnapshot({documents});
  return{provider,md,drafts,emit,documents};

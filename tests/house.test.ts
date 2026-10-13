@@ -90,7 +90,10 @@ function fixture(rows: [string, Record<string, any>][] = []) {
   const pending = new Map<string, any>();
   let mode: "open" | "write-halted" = "open";
   const close = vi.fn();
+  const binaryDocuments: any[] = [];
+  const binaryBytes = new Map<string, Blob>();
   const md = {
+    binaryFile: { read: vi.fn(async (_room: string, path: string): Promise<any> => binaryBytes.has(path) ? {kind:"binary",blob:binaryBytes.get(path)} : {kind:"absent",code:"not_found",retryable:false}) },
     rooms: vi.fn(():any[]=>[]),
     call: vi.fn(
       async (_name: string, _input: unknown): Promise<any> => ({
@@ -98,7 +101,7 @@ function fixture(rows: [string, Record<string, any>][] = []) {
       }),
     ),
     query: vi.fn(async (_query: unknown) => ({
-      documents: structuredClone(documents),
+      documents: (_query as any)?.pathPrefix ? structuredClone(binaryDocuments) : structuredClone(documents),
     })),
     observe: vi.fn(async () => ({
       current: () => mode,
@@ -127,6 +130,14 @@ function fixture(rows: [string, Record<string, any>][] = []) {
       for (const { path } of saved) {
         const draft = pending.get(path);
         const currentIndex = documents.findIndex((doc) => doc.path === path);
+        if (draft.parts.file) {
+          const blob = draft.parts.file.blob as Blob;
+          const digest = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", await blob.arrayBuffer())), value => value.toString(16).padStart(2,"0")).join("");
+          binaryBytes.set(path, blob);
+          binaryDocuments.push({room:ROOM,path,binaryFile:{state:"pending",localId:path,path,byteLength:blob.size,mediaType:blob.type || "application/octet-stream",sha256:digest}});
+          pending.delete(path);
+          continue;
+        }
         if (draft.parts.removal) documents.splice(currentIndex, 1);
         else if (draft.parts.creation)
           documents.push({
@@ -951,7 +962,7 @@ it("uses the exact merge source shown even after a newer background read", async
 
 describe("Persisted Room attachment descriptors", () => {
   const attachment = {
-    attachment_ref: "at_example",
+    path: "files/example",
     title: "Workshop outline.pdf",
     type: "application/pdf",
     size: 42,
@@ -991,7 +1002,7 @@ describe("Persisted Room attachment descriptors", () => {
     for (const logo of [
       { src: "https://example.test/photo.jpg", title: "Photo" },
       { rawFile: {} },
-      { ...attachment, attachment_ref: "https://example.test/image" },
+      { ...attachment, path: "https://example.test/image" },
       { ...attachment, sha256: "NOT-A-DIGEST" },
     ]) {
       expect(() =>
@@ -1016,263 +1027,71 @@ describe("Persisted Room attachment descriptors", () => {
   });
 });
 
-describe("Documented Runtime attachment actions", () => {
-  const digest =
-    "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
-  const asset = {
-    attachment_ref: "at_asset1",
-    title: "brief.txt",
-    type: "text/plain",
-    size: 3,
-    sha256: digest,
-  };
-  const full = (extra: Record<string, unknown> = {}) => ({
-    original: { opaque: true },
-    version: "opaque-version",
-    attachment: "at_asset1",
-    name: "brief.txt",
-    bytes: 3,
-    sha256: digest,
-    media_type: "text/plain",
-    save: { status: "saved", failure: null },
-    storage: { provider: "house", scope: ROOM },
-    ...extra,
-  });
+describe("Room binary files", () => {
   const file = () => new File(["abc"], "brief.txt", { type: "text/plain" });
-  it("sends exact upload input, actual File bytes, a fresh version and lowercase SHA-256", async () => {
-    const f = fixture();
-    const input = file();
-    f.md.call.mockResolvedValue({
-      kind: "action",
-      result: { attachment: "at_asset1" },
-    });
-    expect(await f.provider.uploadAttachment(input)).toEqual(asset);
-    const [name, payload] = f.md.call.mock.calls[0];
-    expect(name).toBe("attachments/upload");
-    expect(payload).toEqual({
-      room_ref: ROOM,
-      version: expect.any(String),
-      name: "brief.txt",
-      bytes: 3,
-      sha256: digest,
-      media_type: "text/plain",
-      blob: input,
-    });
-    expect((payload as any).blob).toBe(input);
-    expect((payload as any).version).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-    );
-    await f.provider.uploadAttachment(input);
-    expect((f.md.call.mock.calls[1][1] as any).version).not.toBe(
-      (payload as any).version,
-    );
-    expect(f.md.roomDraft.write).not.toHaveBeenCalled();
-    expect(f.md.save).not.toHaveBeenCalled();
-  });
-  it("accepts exact full upload metadata and keeps a pending asset visibly queued", async () => {
-    const f = fixture();
-    f.md.call.mockResolvedValue({
-      kind: "action",
-      result: full({ save: { status: "pending", failure: null } }),
-    });
-    expect(await f.provider.uploadAttachment(file())).toEqual(asset);
-    expect(f.statuses.at(-1)).toMatchObject({
-      phase: "queued",
-      message: expect.stringContaining("not linked"),
-    });
-    expect(f.md.save).not.toHaveBeenCalled();
-  });
-  it("rejects both upload failure channels, unknown output keys, alternate shapes and mismatched metadata", async () => {
-    for (const result of [
-      { attachment: "at_asset1", upload_failure: null },
-      { attachment: "at_asset1", upload_failure: { code: "quota" } },
-      full({ save: { status: "failed", failure: "quota" } }),
-      { attachment: "at_asset1", unexpected: true },
-      { attachment_ref: "at_asset1" },
-      "at_asset1",
-      full({ sha256: "a".repeat(64) }),
-    ]) {
-      const f = fixture();
-      f.md.call.mockResolvedValue({ kind: "action", result });
-      await expect(f.provider.uploadAttachment(file())).rejects.toThrow();
-      expect(f.md.save).not.toHaveBeenCalled();
-      expect(f.statuses.at(-1)?.phase).toBe("error");
-    }
-  });
-  it("reports exact Runtime refusal detail and does not retry transport uncertainty", async () => {
-    const f = fixture();
-    const refusal = {
-      kind: "rejected",
-      code: "asset-too-large",
-      fields: { maximum: 2 },
-    };
-    f.md.call.mockResolvedValue(refusal);
-    await expect(f.provider.uploadAttachment(file())).rejects.toMatchObject({
-      details: refusal,
-      message: expect.stringContaining("asset-too-large"),
-    });
-    expect(f.md.call).toHaveBeenCalledOnce();
-    const g = fixture();
-    g.md.call.mockResolvedValue({ kind: "transport-uncertainty" });
-    await expect(g.provider.uploadAttachment(file())).rejects.toThrow(
-      "transport-uncertainty",
-    );
-    expect(g.md.call).toHaveBeenCalledOnce();
-  });
-  it("returns Blob bytes only from the full get record and uses selected Room scope", async () => {
-    const f = fixture();
-    const blob = new Blob(["abc"], { type: "text/plain" });
-    f.md.call.mockResolvedValue({
-      kind: "action",
-      result: full({ blob, read: { status: "available" } }),
-    });
-    const result = await f.provider.getAttachment("at_asset1");
-    expect(result).toEqual({
-      blob,
-      name: "brief.txt",
-      type: "text/plain",
-      status: "available",
-    });
-    expect(result.blob).toBe(blob);
-    expect(f.md.call).toHaveBeenCalledWith("attachments/get", {
-      room_ref: ROOM,
-      attachment_ref: "at_asset1",
-    });
-    f.md.call.mockResolvedValueOnce({ kind: "action", result: blob });
-    await expect(f.provider.getAttachment("at_asset1")).rejects.toThrow(
-      "shape",
-    );
-  });
-  it("returns metadata-only reads without inventing bytes or a persisted state", async () => {
-    const f = fixture();
-    for (const status of ["not_saved", "unavailable"] as const) {
-      f.md.call.mockResolvedValueOnce({
-        kind: "action",
-        result: full({ read: { status }, media_type: null }),
-      });
-      expect(await f.provider.getAttachment("at_asset1")).toEqual({
-        blob: null,
-        name: "brief.txt",
-        type: null,
-        status,
-      });
-    }
-    f.md.call.mockResolvedValueOnce({ kind: "action", result: full() });
-    expect((await f.provider.getAttachment("at_asset1")).status).toBe(
-      "unavailable",
-    );
-    const blob = new Blob(["abc"]);
-    f.md.call.mockResolvedValueOnce({ kind: "action", result: full({ blob }) });
-    expect((await f.provider.getAttachment("at_asset1")).status).toBe(
-      "available",
-    );
-  });
-  it("rejects inconsistent get records and unknown keys", async () => {
-    for (const result of [
-      full({ read: { status: "available" } }),
-      full({ blob: new Blob(["abc"]), read: { status: "not_saved" } }),
-      full({ blob: "data:text/plain,abc" }),
-      full({ extra: true }),
-      full({ read: { status: "unavailable", extra: true } }),
-      full({ blob: new Blob(["wrong length"]) }),
-      full({ attachment: "at_wrong" }),
-      full({ storage: { provider: "house", scope: "another-room" } }),
-    ]) {
-      const f = fixture();
-      f.md.call.mockResolvedValue({ kind: "action", result });
-      await expect(f.provider.getAttachment("at_asset1")).rejects.toThrow();
-    }
-  });
-  it("refuses URL/data/blob/malformed refs before dispatch and never falls back to cached bytes", async () => {
-    const f = fixture();
-    for (const ref of [
-      "https://example.test/a",
-      "data:text/plain,abc",
-      "blob:local",
-      "at_",
-      "at_with space",
-      "at_with/slash",
-    ])
-      await expect(f.provider.getAttachment(ref)).rejects.toThrow("at_");
+  const digest = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+  it("writes a binary Room Draft, queues it and reads the exact Room path", async () => {
+    const f = fixture(), input = file();
+    const asset = await f.provider.uploadAttachment(input);
+    expect(asset).toEqual({path:expect.stringMatching(/^files\/[0-9a-f-]+$/),title:"brief.txt",type:"text/plain",size:3,sha256:digest});
+    expect(f.md.roomDraft.write).toHaveBeenCalledWith(ROOM, asset.path, null, {file:{blob:input}});
+    expect(f.md.save).toHaveBeenCalledWith(ROOM,[{path:asset.path,revision:"revision-1"}]);
+    expect(f.statuses.at(-1)).toMatchObject({phase:"queued",message:expect.stringContaining("locally")});
+    expect(await f.provider.getAttachment(asset.path)).toMatchObject({blob:input,status:"available",type:"text/plain"});
+    expect(f.md.binaryFile.read).toHaveBeenCalledWith(ROOM,asset.path);
     expect(f.md.call).not.toHaveBeenCalled();
-    f.md.call.mockResolvedValueOnce({
-      kind: "action",
-      result: full({ blob: new Blob(["abc"]) }),
-    });
-    await f.provider.getAttachment("at_asset1");
-    f.md.call.mockResolvedValueOnce({
-      kind: "room-not-readable",
-      locator: ROOM,
-    });
-    await expect(f.provider.getAttachment("at_asset1")).rejects.toThrow(
-      "room-not-readable",
-    );
-    expect(f.md.call).toHaveBeenCalledTimes(2);
   });
-  it("links a completed upload using descriptor JSON only, with no bytes or object URL in the document", async () => {
-    const f = fixture([["contacts", contact()]]);
-    f.md.call.mockResolvedValue({
-      kind: "action",
-      result: { attachment: "at_asset1" },
-    });
-    const attachment = await f.provider.uploadAttachment(file());
-    await f.provider.create("contact_notes", {
-      data: {
-        contact_id: "contact-1",
-        date: baseDate,
-        attachments: [attachment],
-      },
-    });
-    const creation = f.md.roomDraft.write.mock.calls[0][3].creation;
-    expect(JSON.parse(creation.fields.attachments)).toEqual([asset]);
-    expect(JSON.stringify(creation)).not.toMatch(/rawFile|data:|blob:|"src"/);
-    expect(f.md.call).toHaveBeenCalledOnce();
-    expect(f.md.save).toHaveBeenCalledOnce();
+  it("keeps the file draft and structured refusal when Save is refused without retrying", async () => {
+    const f=fixture();const refusal={outcome:"refused",code:"new_refusal",retryable:false,location:"file"};
+    f.md.save.mockResolvedValueOnce(refusal as never);
+    await expect(f.provider.uploadAttachment(file())).rejects.toMatchObject({details:refusal,message:expect.stringContaining("new_refusal")});
+    expect(f.pending.size).toBe(1);expect(f.md.save).toHaveBeenCalledOnce();expect(f.md.roomDraft.discard).not.toHaveBeenCalled();
   });
-  it("checks unfamiliar references against only selected-Room local metadata and saves during halt without an Action", async () => {
-    const f = fixture([["contacts", contact()]]);
-    f.setMode("write-halted");
-    const metadata={reference:asset.attachment_ref,name:asset.title,byteLength:asset.size,mediaType:asset.type,entry:{opaque:true}};
-    f.md.rooms.mockReturnValue([{locator:"another-room",attachments:[metadata]}]);
-    await expect(f.provider.create("contact_notes", {data:{contact_id:"contact-1",date:baseDate,attachments:[asset]}})).rejects.toThrow("not declared");
-    expect(f.md.roomDraft.write).not.toHaveBeenCalled();
-    f.md.rooms.mockReturnValue([{locator:ROOM,attachments:[{...metadata,byteLength:4}]}]);
-    await expect(f.provider.create("contact_notes", {data:{contact_id:"contact-1",date:baseDate,attachments:[asset]}})).rejects.toThrow("does not match");
-    f.md.rooms.mockReturnValue([{locator:ROOM,attachments:[metadata]}]);
-    await f.provider.create("contact_notes", {data:{contact_id:"contact-1",date:baseDate,attachments:[asset]}});
-    expect(f.md.call).not.toHaveBeenCalled();expect(f.md.save).toHaveBeenCalledOnce();
+  it("preserves an uncertain Save and does not retry", async () => {
+    const f=fixture();f.md.save.mockRejectedValueOnce(new Error("Lost save answer"));
+    await expect(f.provider.uploadAttachment(file())).rejects.toThrow("Lost save answer");
+    expect(f.pending.size).toBe(1);expect(f.md.save).toHaveBeenCalledOnce();
   });
-  it("blocks uploads when writes halt while allowing attachment reads", async () => {
-    const f = fixture();
-    f.setMode("write-halted");
-    await expect(f.provider.uploadAttachment(file())).rejects.toThrow("paused");
-    expect(f.md.call).not.toHaveBeenCalled();
-    f.md.call.mockResolvedValueOnce({ kind: "action", result: full() });
-    expect((await f.provider.getAttachment("at_asset1")).blob).toBeNull();
+  it("refuses a stale file draft before Save",async()=>{
+    const f=fixture();f.md.roomDraft.write.mockResolvedValueOnce({outcome:"stale",current:null} as never);
+    await expect(f.provider.uploadAttachment(file())).rejects.toThrow("stale");expect(f.md.save).not.toHaveBeenCalled();
   });
-});
-
-it("rejects returned Blob bytes whose SHA-256 differs from Room metadata", async () => {
-  const f = fixture();
-  const result = {
-    original: null,
-    version: "opaque",
-    attachment: "at_integrity",
-    name: "brief.txt",
-    bytes: 3,
-    sha256: "a".repeat(64),
-    media_type: "text/plain",
-    save: { status: "saved", failure: null },
-    storage: { provider: "house", scope: ROOM },
-    read: { status: "available" },
-    blob: new Blob(["abc"]),
-  };
-  f.md.call.mockResolvedValue({ kind: "action", result });
-  await expect(f.provider.getAttachment("at_integrity")).rejects.toMatchObject({
-    message: expect.stringContaining("SHA-256"),
-    details: result,
+  it.each(["https://other.test/file","data:text/plain,abc","blob:local","../outside","files/../outside","/absolute","at_old"])("rejects an invalid path %s before reads", async path=>{
+    const f=fixture();await expect(f.provider.getAttachment(path)).rejects.toThrow("path");expect(f.md.query).not.toHaveBeenCalled();expect(f.md.binaryFile.read).not.toHaveBeenCalled();
   });
-  expect(f.md.roomDraft.write).not.toHaveBeenCalled();
+  it.each(["room","path"])("does not read a metadata match from another %s",async kind=>{
+    const f=fixture();const asset=await f.provider.uploadAttachment(file());
+    f.md.query.mockResolvedValueOnce({documents:[{room:kind==="room"?"other":ROOM,path:kind==="path"?asset.path+"-other":asset.path,binaryFile:{}}]} as never);
+    await expect(f.provider.getAttachment(asset.path)).rejects.toThrow("not declared");expect(f.md.binaryFile.read).not.toHaveBeenCalled();
+  });
+  it.each(["abcd","abd"])("checks file size and SHA-256 before returning bytes: %s",async bytes=>{
+    const f=fixture();const asset=await f.provider.uploadAttachment(file());f.md.binaryFile.read.mockResolvedValueOnce({kind:"binary",blob:new Blob([bytes])});
+    await expect(f.provider.getAttachment(asset.path)).rejects.toThrow("SHA-256");
+  });
+  it("keeps unknown read refusals unavailable, with no URL fallback or automatic retry",async()=>{
+    const f=fixture();const asset=await f.provider.uploadAttachment(file());f.md.binaryFile.read.mockResolvedValueOnce({kind:"rejected",code:"new_refusal",retryable:true});
+    expect(await f.provider.getAttachment(asset.path)).toMatchObject({blob:null,status:"unavailable"});expect(f.md.binaryFile.read).toHaveBeenCalledOnce();
+  });
+  it("links the queued binary using only its descriptor, not Blob bytes or an object URL",async()=>{
+    const f=fixture([["contacts",contact()]]);const asset=await f.provider.uploadAttachment(file());
+    await f.provider.create("contact_notes",{data:{contact_id:"contact-1",date:baseDate,attachments:[asset]}});
+    const creation=f.md.roomDraft.write.mock.calls[1][3].creation;
+    expect(JSON.parse(creation.fields.attachments)).toEqual([asset]);expect(JSON.stringify(creation)).not.toMatch(/rawFile|data:|blob:|"src"/);
+    expect(f.md.call).not.toHaveBeenCalled();expect(f.md.save).toHaveBeenCalledTimes(2);
+  });
+  it("checks a reloaded descriptor against only local binary metadata while writes are halted",async()=>{
+    const f=fixture([["contacts",contact()]]);f.setMode("write-halted");const asset={path:"files/known",title:"brief.txt",type:"text/plain",size:3,sha256:digest};
+    const query=f.md.query.getMockImplementation()!;let scope="other",size=3;
+    f.md.query.mockImplementation(async input=>(input as any)?.pathPrefix?{documents:[{room:scope,path:asset.path,binaryFile:{path:asset.path,byteLength:size,mediaType:asset.type,sha256:digest}}]} as never:query(input));
+    await expect(f.provider.create("contact_notes",{data:{contact_id:"contact-1",date:baseDate,attachments:[asset]}})).rejects.toThrow("not declared");
+    scope=ROOM;size=4;await expect(f.provider.create("contact_notes",{data:{contact_id:"contact-1",date:baseDate,attachments:[asset]}})).rejects.toThrow("does not match");
+    size=3;await f.provider.create("contact_notes",{data:{contact_id:"contact-1",date:baseDate,attachments:[asset]}});
+    expect(f.md.call).not.toHaveBeenCalled();expect(f.md.binaryFile.read).not.toHaveBeenCalled();expect(f.md.save).toHaveBeenCalledOnce();
+  });
+  it("queues binary Drafts locally during a provider write halt",async()=>{
+    const f=fixture();f.setMode("write-halted");const asset=await f.provider.uploadAttachment(file());
+    expect(asset.path).toMatch(/^files\//);expect(f.md.save).toHaveBeenCalledOnce();expect(f.md.call).not.toHaveBeenCalled();
+  });
 });
 
 // These tests distinguish submitted full-form values from actual user edits.
@@ -1659,7 +1478,7 @@ describe("Adversarial stale full-form intent", () => {
 
 describe("Adversarial compound and custom mutation intent", () => {
   const attachment = {
-    attachment_ref: "at_existing",
+    path: "files/existing",
     title: "Existing brief.pdf",
     type: "application/pdf",
   };
@@ -1864,12 +1683,12 @@ it("treats reordered configuration object keys as a semantic no-op and returns c
 
 it("treats reordered keys inside unchanged attachment JSON as untouched and retains the current asset", async () => {
   const oldAsset = {
-    attachment_ref: "at_old",
+    path: "files/old",
     title: "Old brief.pdf",
     type: "application/pdf",
   };
   const currentAsset = {
-    attachment_ref: "at_current",
+    path: "files/current",
     title: "Current brief.pdf",
     type: "application/pdf",
   };
@@ -1902,7 +1721,7 @@ it("treats reordered keys inside unchanged attachment JSON as untouched and reta
         {
           type: "application/pdf",
           title: "Old brief.pdf",
-          attachment_ref: "at_old",
+          path: "files/old",
         },
       ],
     },
@@ -2051,7 +1870,7 @@ describe("local CSV through the actual Room provider with mocked Runtime", () =>
     const f = fixture();
     f.md.save.mockResolvedValueOnce({
       outcome: "refused",
-      rule: "read_only",
+      code: "read_only", retryable: false,
     } as any);
     const result = await importRows(
       "companies",
@@ -2111,7 +1930,7 @@ it('renders newly visited donor pages synchronously from one observed local snap
 it('never mutates the observed replica during local Save preparation or refusal', async () => {
  const f=fixture(); const provider=createHouseDataProvider(f.md as unknown as HouseRuntime,ROOM,{observed:true});
  provider.setObservedSnapshot({documents:[]});
- f.md.save.mockResolvedValueOnce({outcome:'refused',rule:'invalid-document'} as any);
+ f.md.save.mockResolvedValueOnce({outcome:'refused',code: 'invalid-document', retryable: false} as any);
  await expect(provider.create('companies',{data:company()})).rejects.toThrow('invalid-document');
  const view=provider.getLocalResult(['companies','getList',{pagination:{page:1,perPage:10},filter:{}}]);
  expect((view.value as any).data).toEqual([]); expect(f.md.query).not.toHaveBeenCalled();

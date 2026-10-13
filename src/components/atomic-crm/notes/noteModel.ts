@@ -1,3 +1,4 @@
+import { isBinaryPath } from "@/binary-path";
 import type { HouseAttachment } from "@/house";
 
 /** Only completed Runtime references may make an attachment-only note valid. */
@@ -7,17 +8,14 @@ export const isCompletedRoomAttachment = (
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const asset = value as Record<string, unknown>;
   const allowedFields = new Set([
-    "attachment_ref",
+    "path",
     "title",
     "type",
     "size",
     "sha256",
   ]);
   return (
-    typeof asset.attachment_ref === "string" &&
-    asset.attachment_ref.startsWith("at_") &&
-    asset.attachment_ref.length > 3 &&
-    !/[\s/\\]/.test(asset.attachment_ref) &&
+    isBinaryPath(asset.path) &&
     typeof asset.title === "string" &&
     asset.title.trim().length > 0 &&
     typeof asset.type === "string" &&

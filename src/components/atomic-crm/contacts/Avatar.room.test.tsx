@@ -24,7 +24,7 @@ afterEach(() => {
 describe("Room-backed CRM avatars", () => {
   it("keeps contact initials visible while passing only the stored asset to the safe image helper", () => {
     const avatar = {
-      attachment_ref: "at_contact1",
+      path: "at_contact1",
       title: "photo.png",
       type: "image/png",
     };
@@ -48,7 +48,7 @@ describe("Room-backed CRM avatars", () => {
 
   it("keeps company initials visible when the image helper cannot load a logo", () => {
     const logo = {
-      attachment_ref: "at_company1",
+      path: "at_company1",
       title: "logo.png",
       type: "image/png",
     };
