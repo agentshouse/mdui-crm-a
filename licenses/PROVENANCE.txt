@@ -1,0 +1,38 @@
+CRM port provenance
+
+Donor: marmelab/atomic-crm
+Repository: https://github.com/marmelab/atomic-crm
+Pinned commit: 8b5d47ba32190c68801a427ef7682d7a6afc14e0
+Donor license: MIT, preserved verbatim in LICENSE.txt and THIRD_PARTY_NOTICES.txt.
+
+The retained CRM screens, admin controls, UI components, styles, and icons derive
+from the donor. House-backed providers and release safety changes are port
+modifications. Runtime fonts are shipped locally from @fontsource-variable/inter;
+the Inter SIL Open Font License is preserved in Inter-OFL.txt and the combined
+third-party notices. No remote font service is required.
+
+THIRD_PARTY_NOTICES.txt is generated from the installed, lockfile-pinned
+production dependency closure, which may include unbundled modules. Dependency
+license identifiers and original distributed license/copyright notices are
+preserved. Build-only packages are not claimed as runtime components.
+
+Known platform licensing gap: @agentshouse/app-bridge is published UNLICENSED
+and includes no license grant. Technical release checks do not authorize its
+redistribution or make the full combined release MIT-licensed.
+
+Static release checks do not replace runtime/browser acceptance testing.
+
+Additional upstream MIT notices are included for the vendored component projects
+identified by the donor's src/components/ui/README.md and
+src/components/admin/Readme.md. Those READMEs do not identify exact upstream
+component revisions; the donor commit above remains the exact code provenance.
+The upstream notices were retrieved as text on 2026-10-11 and are checked against
+SHA-256 digests in the generator:
+- shadcn/ui: https://raw.githubusercontent.com/shadcn-ui/ui/c2a67849be260701852b0977ba15eb5f3a0ce2a4/LICENSE.md
+- Shadcn Admin Kit: https://raw.githubusercontent.com/marmelab/shadcn-admin-kit/78e32b93174937f0871877b3ddaf2ddd4d71ea16/LICENSE
+
+React Router release adaptation: the unused framework/SSR loadRouteModule helper
+is replaced at build time by an explicit unsupported-operation error, removing
+arbitrary import(route.module) from the shipped client. The transformer checks
+react-router 7.18.2, the original function SHA-256, and exactly one match. All
+surrounding upstream module source and its MIT notice are preserved.

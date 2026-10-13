@@ -1,0 +1,294 @@
+# House JSON Schema (draft 2020-12). Unconstrained patterns keep identifiers,
+# dates and serialized scalar data exact-match without changing accepted values.
+crm_company:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    name:
+      type: string
+    sector:
+      type: string
+    linkedin_url:
+      type: string
+      pattern: ^[\s\S]*$
+    website:
+      type: string
+      pattern: ^[\s\S]*$
+    phone_number:
+      type: string
+      pattern: ^[\s\S]*$
+    address:
+      type: string
+    zipcode:
+      type: string
+      pattern: ^[\s\S]*$
+    city:
+      type: string
+    state_abbr:
+      type: string
+      pattern: ^[\s\S]*$
+    sales_id:
+      type: string
+      pattern: ^[\s\S]*$
+    created_at:
+      type: string
+      pattern: ^[\s\S]*$
+    description:
+      type: string
+    revenue:
+      type: string
+      pattern: ^[\s\S]*$
+    tax_identifier:
+      type: string
+      pattern: ^[\s\S]*$
+    country:
+      type: string
+    size:
+      type: number
+    context_links:
+      type: string
+      pattern: ^[\s\S]*$
+    logo:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - name
+  - created_at
+crm_contact:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    first_name:
+      type: string
+    last_name:
+      type: string
+    title:
+      type: string
+    company_id:
+      type: string
+      pattern: ^[\s\S]*$
+    linkedin_url:
+      type: string
+      pattern: ^[\s\S]*$
+    first_seen:
+      type: string
+      pattern: ^[\s\S]*$
+    last_seen:
+      type: string
+      pattern: ^[\s\S]*$
+    gender:
+      type: string
+      pattern: ^[\s\S]*$
+    sales_id:
+      type: string
+      pattern: ^[\s\S]*$
+    status:
+      type: string
+      pattern: ^[\s\S]*$
+    background:
+      type: string
+    has_newsletter:
+      enum:
+      - 'true'
+      - 'false'
+    email_jsonb:
+      type: string
+      pattern: ^[\s\S]*$
+    phone_jsonb:
+      type: string
+      pattern: ^[\s\S]*$
+    tags:
+      type: string
+      pattern: ^[\s\S]*$
+    avatar:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - first_name
+  - last_name
+  - first_seen
+  - last_seen
+crm_deal:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    name:
+      type: string
+    company_id:
+      type: string
+      pattern: ^[\s\S]*$
+    category:
+      type: string
+      pattern: ^[\s\S]*$
+    stage:
+      type: string
+      pattern: ^[\s\S]*$
+    description:
+      type: string
+    created_at:
+      type: string
+      pattern: ^[\s\S]*$
+    updated_at:
+      type: string
+      pattern: ^[\s\S]*$
+    archived_at:
+      type: string
+      pattern: ^[\s\S]*$
+    expected_closing_date:
+      type: string
+      pattern: ^[\s\S]*$
+    sales_id:
+      type: string
+      pattern: ^[\s\S]*$
+    amount:
+      type: number
+    index:
+      type: number
+    contact_ids:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - name
+  - company_id
+  - stage
+  - created_at
+  - updated_at
+  - amount
+  - index
+crm_task:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    contact_id:
+      type: string
+      pattern: ^[\s\S]*$
+    task_type:
+      type: string
+      pattern: ^[\s\S]*$
+    text:
+      type: string
+    due_date:
+      type: string
+      pattern: ^[\s\S]*$
+    done_date:
+      type: string
+      pattern: ^[\s\S]*$
+    sales_id:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - contact_id
+  - text
+  - due_date
+crm_contact_note:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    contact_id:
+      type: string
+      pattern: ^[\s\S]*$
+    text:
+      type: string
+    date:
+      type: string
+      pattern: ^[\s\S]*$
+    sales_id:
+      type: string
+      pattern: ^[\s\S]*$
+    status:
+      type: string
+      pattern: ^[\s\S]*$
+    attachments:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - contact_id
+  - date
+crm_deal_note:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    deal_id:
+      type: string
+      pattern: ^[\s\S]*$
+    text:
+      type: string
+    date:
+      type: string
+      pattern: ^[\s\S]*$
+    sales_id:
+      type: string
+      pattern: ^[\s\S]*$
+    attachments:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - deal_id
+  - date
+crm_sale:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    first_name:
+      type: string
+    last_name:
+      type: string
+    email:
+      type: string
+      pattern: ^[\s\S]*$
+    administrator:
+      enum:
+      - 'true'
+      - 'false'
+    disabled:
+      enum:
+      - 'true'
+      - 'false'
+    secondary_emails:
+      type: string
+      pattern: ^[\s\S]*$
+    avatar:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - first_name
+  - last_name
+crm_tag:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    name:
+      type: string
+    color:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - name
+  - color
+crm_configuration:
+  properties:
+    id:
+      type: string
+      pattern: ^[\s\S]*$
+    config:
+      type: string
+      pattern: ^[\s\S]*$
+  required:
+  - id
+  - config

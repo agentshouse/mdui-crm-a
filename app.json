@@ -1,0 +1,20 @@
+{
+  "entry": "index.html",
+  "room_slots": [
+    {
+      "name": "crm",
+      "access": "write",
+      "types": [
+        "crm_company",
+        "crm_contact",
+        "crm_deal",
+        "crm_task",
+        "crm_contact_note",
+        "crm_deal_note",
+        "crm_sale",
+        "crm_tag",
+        "crm_configuration"
+      ]
+    }
+  ]
+}
